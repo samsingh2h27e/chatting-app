@@ -1,33 +1,67 @@
-import React from 'react'
-import './styles.css'
+import React from "react";
+import { Button, Checkbox, Form, Input } from 'antd';
+import "./login.css";
+const onFinish = (values) => {
+  console.log('Success:', values);
+};
+const onFinishFailed = (errorInfo) => {
+  console.log('Failed:', errorInfo);
+};
+const Login = () => (
+        <Form className="login"
+    name="basic"
+    labelCol={{
+      span: 8,
+    }}
+    wrapperCol={{
+      span: 16,
+    }}
+    style={{
+      maxWidth: 600,
+    }}
+    initialValues={{
+      remember: true,
+    }}
+    onFinish={onFinish}
+    onFinishFailed={onFinishFailed}
+    autoComplete="off"
+  >
+    <h1>Login</h1>
+    <Form.Item
+      label="Username"
+      name="username"
+      rules={[
+        {
+          required: true,
+          message: 'Please input your username!',
+        },
+      ]}
+    >
+      <Input />
+    </Form.Item>
 
-function Login(){
-    return <div className="main">
-            <div className='card'>
-                <div className='sub-part'>
-                    <div className ="sign-in">
-					    <h3>Sign In</h3>
-				    </div>
-				    <div className="card-body">
-					    <form className="sform" action="/submit" method="POST">
-						    <div className="ip">
-							    <input type="text" name="email" placeholder="Email"/>
-						    </div>
-						    <div class="ip">
-							    <input type="text" name="pass" placeholder="Password"/>
-						    </div>
-						    <div className="check-box">
-							    <input type="checkbox"/>
-							    remember me
-						    </div>
-						    <div className="bt">
-							    <button type="submit">login</button>
-						    </div>
-					</form>
-				</div>
-                </div>
-            </div>
-        </div>
-}
+    <Form.Item
+      label="Password"
+      name="password"
+      rules={[
+        {
+          required: true,
+          message: 'Please input your password!',
+        },
+      ]}
+    >
+      <Input.Password />
+    </Form.Item>
 
+    <Form.Item name="remember" valuePropName="checked" label={null}>
+      <Checkbox>Remember me</Checkbox>
+    </Form.Item>
+
+    <Form.Item label={null}>
+      <Button type="primary" htmlType="submit">
+        Submit
+      </Button>
+    </Form.Item>
+  </Form>
+);
 export default Login;
