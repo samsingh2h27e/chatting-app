@@ -1,0 +1,105 @@
+*{
+    color: aliceblue;
+    font-size: 20px;
+}
+html,body{
+    background-image: url('http://getwallpapers.com/wallpaper/full/a/5/d/544750.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    height: 100%;
+    font-family: 'Numans', sans-serif;
+}
+
+.main{
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card{
+    height: 100%;
+    width: 25%;
+    display: flex;
+}
+
+.sub-part{
+    height: 45%;
+    width: 100%;
+    margin: auto;
+    border: 10px light black;
+    border-radius: 10px;
+    background-color: rgba(0,0,0,0.5) !important;
+    display: flex;
+    flex-direction: column
+}
+
+.register{
+    height: 55%;
+}
+.sign-in{
+    width: 100%;
+    color: aliceblue;
+    margin: auto;
+    margin-top: 0%;
+    margin-bottom: 0px;
+}
+.sign-in h3{
+    font-size: 30px;
+    margin-left: 30px;
+}
+
+.sform{
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+    margin: auto;
+    margin-bottom: 130px;
+    justify-content: center;
+    align-items: center;
+    width: 90%;
+}
+
+.ip{
+    width: 100%;
+    display: flex;
+    gap: 0px;
+    justify-content: center;
+}
+
+.ip input{
+    height: 4vh;
+    width: 100%;
+    border-radius: 7px;
+    color: black;
+}
+
+.check-box{
+    height: 30px;
+    width: 100%;
+    display: flex;
+    gap: 0px;
+}
+.bt{
+    margin: auto;
+    margin-right: 0px;
+    
+}
+.bt button{
+    background-color: rgb(232, 232, 32);
+    color: black;
+    padding: auto;
+    border-radius: 5px;
+    height: 40px;
+    width: 100px;
+}
+.rform{
+    margin: auto;
+    margin-top: 0px;
+}
+.rform input{
+    width: 100%;
+    border-radius: 5px;
+    color: black;
+}
