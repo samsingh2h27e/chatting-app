@@ -1,6 +1,7 @@
 import React , {useState, useEffect} from 'react'
 import { Tabs } from 'antd';
 import { Col, Row } from "antd";
+import { Color } from 'antd/es/color-picker';
 
 
 
@@ -177,7 +178,7 @@ const MessageBox = () => {
         style={{
           overflowY: "scroll",
           height: "100vh",
-          backgroundColor: "#ffffff",
+          backgroundColor: "#f0f0f0",
           padding: "10px",
           borderLeft: "solid black 1px",
         }}
@@ -186,24 +187,33 @@ const MessageBox = () => {
           {activeChat.name}
         </h3>
         <div>
-         
-
           {activeChat.messages.map((message, index) => {
             const msgStyle = {
-              display: "block",
+              display: "flex",
               // border: "solid black 1px",
               padding: "5px",
-              margin: "5px",
-              textAlign: "left",
+              margin: "10px",
+              justifyContent: "flex-start",
+            };
+
+            const msgItemStyle = {
+              border: "solid black 1px",
+              padding: "10px",
+              borderRadius: "0px 0px 15px 0px",
+              backgroundColor: "#ffffff",
+              color: "#333333",
             };
 
             if (message.sender === "me") {
-              msgStyle.textAlign = "right";
+              msgStyle.justifyContent = "flex-end";
+              msgItemStyle.backgroundColor = "#d1e7fd";
+              msgItemStyle.borderRadius = "0px 0px 0px 15px";
+              msgItemStyle.color = "#333333";
             }
 
             return (
               <div key={index} style={msgStyle}>
-                {message.message}
+                <div style={msgItemStyle}> {message.message}</div>
               </div>
             );
           })}
