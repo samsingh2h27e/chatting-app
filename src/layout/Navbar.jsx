@@ -12,6 +12,7 @@ const Navbar = () => {
     { label: "Chats", key: "1", fn: "/" },
     { label: "Register", key: "2", fn: "/register" },
     { label: "Logout", key: "3", fn: "/login" },
+    { label: "Settings", key: "4", fn: "/settings" },
   ];
 
   // Handle tab change to navigate to the corresponding route
