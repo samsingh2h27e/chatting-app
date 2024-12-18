@@ -11,7 +11,7 @@ const Navbar = () => {
   const tabItems = [
     { label: "Chats", key: "1", fn: "/" },
     { label: "Register", key: "2", fn: "/register" },
-    { label: "Logout", key: "3", fn: "/login" },
+    { label: "Login", key: "3", fn: "/login" },
     { label: "Settings", key: "4", fn: "/settings" },
   ];
 
