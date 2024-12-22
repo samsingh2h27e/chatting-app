@@ -2,8 +2,10 @@ import React,{use, useState} from "react";
 import './register.css';
 import Layout from "./layout/Layout";
 import axios from 'axios';
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Register = () => {
+    const navigate = useNavigate();
     const [email,setEmail] = useState("");
     const [password,setPassword] = useState("");
     const [f_name,setName] = useState("");
@@ -14,20 +16,33 @@ const Register = () => {
     async function handleSubmit(e) {
       e.preventDefault();
       if(cnf !== password){
-        alert("Register failed because password is not matching.");
+        
+        alert("Register failed because password is not matching."); 
         return;
       } // Prevent default form submission behavior
       try {
-        let response = await axios.post("http://localhost:5000/register", {
+        let response = await axios.post("http://localhost:5000/api/auth/register", {
           email: email, // Send flat key-value pairs
           password: password,
           fname: f_name,
           lname: l_name,
           age: age
         });
-        console.log(response);
+        // console.log(response.data.success);
+
+        if (response.data.success){
+          navigate('/login');
+        } else {
+          
+          alert(response.data.message);
+          navigate("/login");
+
+        }
       } catch (error) {
+        
         console.error("Error:", error);
+        alert("Some error occured at the backend");
+
       }
     }
   

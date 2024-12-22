@@ -1,10 +1,19 @@
 import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now },
+// Define the subdocument schema for user contacts
+const userContactSchema = new mongoose.Schema({
+  username: { type: String, required: true },
+  user_id: { type: Number, required: true },
+  chat_id: { type: String, required: true },
 });
 
-export const User = mongoose.model("User", userSchema);
+// Define the main user schema
+const userSchema = new mongoose.Schema({
+  _id: { type: String, required: true }, // Custom _id as a string
+  username: { type: String, required: true },
+  password: { type: String, required: true },
+  user_contacts: [userContactSchema],
+});
+
+// Create and export the model
+export const User = mongoose.model("users", userSchema);
