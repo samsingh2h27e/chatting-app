@@ -8,7 +8,7 @@ import Notloggedin from "./layout/Notloggedin";
 import {useAuth} from './context/authContext'
 
 function App() {
-    const [auth, setAuth] = useAuth();
+    const [auth]= useAuth();
     let isLoggedIn = (auth.id !== null)
 
    
