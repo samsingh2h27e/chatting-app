@@ -1,7 +1,6 @@
 import React , {useState, useEffect, useRef} from 'react'
 import { Tabs } from 'antd';
 import { Col, Row } from "antd";
-import makeSocket from './connectSocket';
 import { io } from 'socket.io-client';
 
 
