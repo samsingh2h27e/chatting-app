@@ -1,62 +1,8 @@
 import React , {useState, useEffect} from 'react'
 import { Tabs } from 'antd';
 import { Col, Row } from "antd";
-import { Color } from 'antd/es/color-picker';
+import { useSocket } from '../context/socketIoContext';
 
-
-
-
-
-// const MyTabs = () => {
-//   // Define the array of elements you want to display in the tabs
-//   const tabData = [
-//     { label: "ALL",key:"1",   content: "/all-chats" },
-//     { label: "UNREAD",key:"2",  content: "unread-chats" },
-//     { label: "ARCHIEVED",key:"3",  content: "archieved-chats" },
-//   ];
-
-  
-
-//   return (
-    
-//       <Tabs
-//         style={{
-//           minHeight: "100vh",
-//           position: "sticky",
-//           left: "0",
-//         }}
-//         defaultActiveKey="1" // Set the default active tab
-//         tabPosition="left" // Position the tabs on the left
-//         items={tabData.map((item) => ({
-//           label: item.label, // The tab label
-//           key: item.key, // Unique key for each tab
-//         }))}
-//       />
-    
-//   );
-// };
-
-
-
-// const dummyPeople = [
-//   {
-//     name: "A",
-//     messages: [
-//       {
-//         sender: this.name,
-//         message: "hii",
-//       },
-//       {
-//         sender: "me",
-//         message: "hello there",
-//       },
-//       {
-//         sender: "me",
-//         message: "What made you text me",
-//       },
-//     ],
-//   },
-// ];
 
 const dummyPeople = Array.from({ length: 20 }, (_, personIndex) => {
   const personName = `Person_${personIndex + 1}`;
@@ -78,6 +24,12 @@ const dummyPeople = Array.from({ length: 20 }, (_, personIndex) => {
 
 
 const MessageBox = () => {
+  
+  let [socket, setSocket ] = useSocket();
+  console.log(socket);
+  // socket = io("http://localhost:5000");
+  
+  
 
   const tabData = [
     { label: "ALL", key: "1", content: "all-chats" },
@@ -91,7 +43,7 @@ const MessageBox = () => {
   const onTabChange = (key) => {
     const tab = tabData.find((item) => item.key === key);
     if (tab) {
-      setActiveTab(tab); // Navigate to the URL defined in `fn`
+      setActiveTab(tab); //// write the logic to navigate
     }
   };
 
@@ -101,6 +53,40 @@ const MessageBox = () => {
       setActiveChat(chat); // Navigate to the URL defined in `fn`
     }
   };
+
+
+  /// working currently
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+
+  const sendMessage = () =>{
+    console.log(`the input message : ${input}`);
+    socket.emit('message', input);
+    setMessages(prev =>[...prev, input]);
+    setInput('');
+    console.log('the message : ', messages);
+
+  }
+ 
+
+
+  // useEffect(()=>{
+  //   socket.on('message', (data)=>{
+  //     console.log(`Message from server: ${data}`)
+    
+  //   })
+
+  //   return ()=>{
+  //     socket.disconnect();
+  //   }
+  // }, []);
+
+
+
+  //// 190
+
+
+
   
 
 
@@ -218,6 +204,15 @@ const MessageBox = () => {
             );
           })}
         </div>
+        {/* 63 */}
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your message"
+          style={{ marginRight: "10px" }}
+        />
+        <button onClick={sendMessage}>Send</button>
       </Col>
     </Row>
   );};

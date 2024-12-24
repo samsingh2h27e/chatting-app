@@ -31,8 +31,10 @@ const findUser = async (data)=>{ /// data = the email which is _id in the our do
 
 export const registerController = async ( req, res) =>{
     console.log(req.body, "client is sending  his register data in post req");///
-
-    if (existingUser(req.body.email)){
+    const exists = await existingUser(req.body.email);
+    
+    
+    if (exists){
         res.json({
             success:false,
             message:`User with email id "${req.body.email}" already exists, please login`

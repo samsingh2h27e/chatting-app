@@ -3,19 +3,18 @@ import React from 'react'
 import Layout from "./layout/Layout"
 import Notloggedin from './layout/Notloggedin';
 import MessageBox from './layout/MessageBox';
+import { SocketProvider } from './context/socketIoContext';
 
 const Home = () => {
 
-  const isLoggedIn = true;
+  
   return (
-
     <Layout>
-
-      { isLoggedIn ? <MessageBox/> : <Notloggedin/>}
-       
-       
+      <SocketProvider>
+        <MessageBox/>
+      </SocketProvider>
     </Layout>
-)
+  );
 }
 
 export default Home;
