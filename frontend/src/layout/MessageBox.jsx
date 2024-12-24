@@ -1,7 +1,8 @@
-import React , {useState, useEffect} from 'react'
+import React , {useState, useEffect, useRef} from 'react'
 import { Tabs } from 'antd';
 import { Col, Row } from "antd";
-import { useSocket } from '../context/socketIoContext';
+import makeSocket from './connectSocket';
+import { io } from 'socket.io-client';
 
 
 const dummyPeople = Array.from({ length: 20 }, (_, personIndex) => {
@@ -25,11 +26,12 @@ const dummyPeople = Array.from({ length: 20 }, (_, personIndex) => {
 
 const MessageBox = () => {
   
-  let [socket, setSocket ] = useSocket();
-  console.log(socket);
-  // socket = io("http://localhost:5000");
+  // let [socket, setSocket ] = useSocket();
+  // const socket = makeSocket();
+  // console.log(socket);
   
-  
+  // const socket = useRef(io("http://localhost:5000"));
+  const socketRef = useRef(null);
 
   const tabData = [
     { label: "ALL", key: "1", content: "all-chats" },
@@ -57,40 +59,40 @@ const MessageBox = () => {
 
   /// working currently
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
 
-  const sendMessage = () =>{
-    console.log(`the input message : ${input}`);
-    socket.emit('message', input);
-    setMessages(prev =>[...prev, input]);
-    setInput('');
-    console.log('the message : ', messages);
+  // Initialize the socket connection in useEffect
+  useEffect(() => {
+    // Create the socket instance once
+    socketRef.current = io("http://localhost:5000");
 
-  }
- 
+    // Log connection
+    socketRef.current.on("connect", () => {
+      console.log("Connected to server:", socketRef.current.id);
+    });
 
+    // Listen for messages from the server
+    socketRef.current.on("message", (msg) => {
+      console.log("Message from server:", msg);
+      setMessages((prevMessages) => [...prevMessages, msg]);
+    });
 
-  // useEffect(()=>{
-  //   socket.on('message', (data)=>{
-  //     console.log(`Message from server: ${data}`)
-    
-  //   })
+    // Clean up the socket connection when the component unmounts
+    return () => {
+      socketRef.current.disconnect();
+      console.log("Socket disconnected");
+    };
+  }, []); // Empty dependency array ensures this runs only once
 
-  //   return ()=>{
-  //     socket.disconnect();
-  //   }
-  // }, []);
-
-
-
-  //// 190
-
-
-
-  
-
-
-  
+  const sendMessage = () => {
+    console.log(`The input message: ${input}`);
+    // Emit the message to the server
+    if (socketRef.current) {
+      socketRef.current.emit("message", input);
+    }
+    setMessages((prev) => [...prev, { sender: "me", message: input }]);
+    setInput("");
+  };
   
   return (
     <Row style={{ height: "100vh", overflow: "hidden" }}>

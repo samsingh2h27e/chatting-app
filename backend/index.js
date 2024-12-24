@@ -30,6 +30,7 @@ app.use("/api/auth", authRoutes);
 
 io.on('connection' , (socket)=>{
     console.log(`User connected : ${socket.id}`);
+    
 
     socket.on('message', (data)=>{
         console.log(`sending ${data} to ${socket.id}`);
