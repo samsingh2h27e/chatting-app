@@ -2,6 +2,7 @@ import React , {useState, useEffect, useRef} from 'react'
 import { Tabs } from 'antd';
 import { Col, Row } from "antd";
 import { io } from 'socket.io-client';
+import { useAuth } from '../context/authContext';
 
 
 const dummyPeople = Array.from({ length: 20 }, (_, personIndex) => {
@@ -59,11 +60,19 @@ const MessageBox = () => {
   /// working currently
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [allChats,setAllChats] = useState([]);
 
   // Initialize the socket connection in useEffect
+
+  const [auth] = useAuth();
   useEffect(() => {
     // Create the socket instance once
-    socketRef.current = io("http://localhost:5000");
+    
+    socketRef.current = io("http://localhost:5000",
+      {
+        auth : {id:auth.id},
+      }
+    );
 
     // Log connection
     socketRef.current.on("connect", () => {
@@ -75,6 +84,15 @@ const MessageBox = () => {
       console.log("Message from server:", msg);
       setMessages((prevMessages) => [...prevMessages, msg]);
     });
+
+
+    // get all-chats from the server
+    socketRef.current.emit('all-chats', auth.id);
+    
+    socketRef.current.on('all-chats',(chats)=>{
+      console.log(chats);//// here i am getting  "all-chats
+      setAllChats(chats);
+    })
 
     // Clean up the socket connection when the component unmounts
     return () => {
