@@ -39,8 +39,15 @@ const MessageBox = () => {
     { label: "ARCHIEVED", key: "3", content: "archieved-chats" },
   ];
 
+  const initialAllChats = [{ _id: "tutorial", username: "TUTORIAL" }];
+  const initialMessages = [{sender:"tutorial", message:"the tutorial text will come here"}]
+
   const [activeTab, setActiveTab] = useState(tabData[0]);
-  const [activeChat, setActiveChat] = useState(dummyPeople[0]);
+  const [allChats, setAllChats] = useState(initialAllChats);
+  const [activeChat, setActiveChat] = useState(initialAllChats[0]);
+  const [messages, setMessages] = useState(initialMessages);
+  const [input, setInput] = useState("");
+  
 
   const onTabChange = (key) => {
     const tab = tabData.find((item) => item.key === key);
@@ -50,17 +57,20 @@ const MessageBox = () => {
   };
 
   const onChatChange = (key) => {
-    const chat = dummyPeople.find((item) => item.id === key);
-    if (chat) {
-      setActiveChat(chat); // Navigate to the URL defined in `fn`
-    }
+    const chat = allChats.find((item) => item._id === key);
+    
+    console.log(`current chat:`, chat)
+    if (chat) setActiveChat(chat); 
+
+    if (chat._id === "tutorial") {setMessages(initialMessages);return };
+
+    socketRef.current.emit("get-initial-messages", chat._id);
+    // console.log(chat._id);
+
+
+
+    
   };
-
-
-  /// working currently
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-  const [allChats,setAllChats] = useState([]);
 
   // Initialize the socket connection in useEffect
 
@@ -85,13 +95,19 @@ const MessageBox = () => {
       setMessages((prevMessages) => [...prevMessages, msg]);
     });
 
+    socketRef.current.on("get-initial-messages", (msgs) => {
+      console.log("initial messages from server:", msgs);
+      setMessages((prevMessages) => msgs);
+    });
+
 
     // get all-chats from the server
     socketRef.current.emit('all-chats', auth.id);
     
     socketRef.current.on('all-chats',(chats)=>{
       console.log(chats);//// here i am getting  "all-chats
-      setAllChats(chats);
+      setAllChats([initialAllChats[0], ...chats]);
+     
     })
 
     // Clean up the socket connection when the component unmounts
@@ -165,13 +181,13 @@ const MessageBox = () => {
         >
           <Tabs
             style={{}}
-            activeKey={activeChat.id}
+            activeKey={activeChat._id}
             onChange={onChatChange}
-            defaultActiveKey="1" // Set the default active tab
+            // defaultActiveKey="1" // Set the default active tab
             tabPosition="right" // Position the tabs on the left
-            items={dummyPeople.map((item) => ({
-              label: item.name, // The tab label
-              key: item.id, // Unique key for each tab
+            items={allChats.map((item) => ({
+              label: item.username, // The tab label
+              key: item._id, // Unique key for each tab
             }))}
           />
         </div>
@@ -189,10 +205,18 @@ const MessageBox = () => {
         }}
       >
         <h3 style={{ display: "block", textAlign: "center" }}>
-          {activeChat.name}
+          {activeChat.username}
         </h3>
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your message"
+          style={{ marginRight: "10px" }}
+        />
+        <button onClick={sendMessage}>Send</button>
         <div>
-          {activeChat.messages.map((message, index) => {
+          {messages.map((message, index) => {
             const msgStyle = {
               display: "flex",
               // border: "solid black 1px",
@@ -209,7 +233,7 @@ const MessageBox = () => {
               color: "#333333",
             };
 
-            if (message.sender === "me") {
+            if (message.sender_id === auth.id) {
               msgStyle.justifyContent = "flex-end";
               msgItemStyle.backgroundColor = "#d1e7fd";
               msgItemStyle.borderRadius = "0px 0px 0px 15px";
@@ -224,14 +248,6 @@ const MessageBox = () => {
           })}
         </div>
         {/* 63 */}
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your message"
-          style={{ marginRight: "10px" }}
-        />
-        <button onClick={sendMessage}>Send</button>
       </Col>
     </Row>
   );};
