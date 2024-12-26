@@ -1,6 +1,7 @@
 import { User } from "../db/userModel.js";
 import { Message } from "../db/messageModel.js";
 import { concatenateLexicographically } from "../helpers/stringConcat.js";
+import { updateUserContactChatId } from "../helpers/queries.js";
 
 
 export const getAllChats = async( id)=>{
@@ -36,27 +37,7 @@ export const getAllMessages= async(selfId, peerId)=>{
     
 }
 
-async function updateUserContactChatId(userId, contactId, newChatId) {
-  try {
-    const result = await User.findOneAndUpdate(
-      { _id: userId, "user_contacts._id": contactId }, // Match the user and specific contact
-      {
-        $set: {
-          "user_contacts.$.chat_id": newChatId, // Update only the chat_id
-        },
-      },
-      { new: true } // Return the updated document
-    );
 
-    if (result) {
-      console.log("Chat ID updated successfully");
-    } else {
-      console.log("No matching contact found.");
-    }
-  } catch (error) {
-    console.error("Error updating chat ID:", error);
-  }
-}
 export const storeOneMessage = async(data)=>{
     const sender_receiver_data = await User.findOne(
       { _id: data.sender_id, "user_contacts._id": data.receiver_id }, // Match the user and contact email
@@ -72,11 +53,11 @@ export const storeOneMessage = async(data)=>{
             _id:"null"
         }
 
-        console.log(last_msg);
+        // console.log(last_msg);
         
     } else {
         last_msg = await Message.findById(last_msg_id);
-        console.log(last_msg);
+        // console.log(last_msg);
     }
 
    
@@ -90,19 +71,19 @@ export const storeOneMessage = async(data)=>{
       next_msg_id: "null",
     });
 
+    let message=null;
+
     try {
-      const message = await new_msg.save();
+      message = await new_msg.save();
       console.log("message saved:", message);
     } catch (err) {
-      console.error("Error saving user:", err);
-    }
+      console.error("Error saving message:", err);
+      return null;
+    } 
 
     
-    updateUserContactChatId(data.sender_id, data.receiver_id, new_msg._id );
-    updateUserContactChatId(data.receiver_id, data.sender_id, new_msg._id );
-
-
-    
+    await updateUserContactChatId(data.sender_id, data.receiver_id, new_msg._id );
+    await updateUserContactChatId(data.receiver_id, data.sender_id, new_msg._id );
 
     return message;
     

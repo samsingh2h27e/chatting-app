@@ -28,31 +28,35 @@ connectDB();
 ///routes
 app.use("/api/auth", authRoutes);
 
+const activeUsers = new Map();
 
 io.on('connection' , (socket)=>{
     const auth = socket.handshake.auth;
     console.log(`User connected \n, socket-id : ${socket.id}, username :${auth.id} `);
+    activeUsers.set(auth.id, socket.id);
+    // console.log(activeUsers.get(auth.id))
     
 
     socket.on('message', async(data)=>{
         
-        console.log('received data from client',data);
+        console.log('received data from client________',data);
         const dbResponse = await storeOneMessage(data);
+        // console.log(dbResponse);
         
-
-        // check if (data.receiver_id exists in mpp)
-        // if yes , send 'dbResponse' to that socket.id 
-        
+        if (activeUsers.has(data.receiver_id)){ 
+            io.to(activeUsers.get(data.receiver_id)).emit('message',dbResponse);
+            console.log('Sent message to receiver______')
+        }
+       
+        socket.emit('message',dbResponse);
+        console.log("Sent message to sender_______");
     })
 
-    // socketRef.current.emit("get-initial-messages", chat._id);
     socket.on("get-initial-messages", async (peerId)=>{
         const messages = await getAllMessages(auth.id, peerId);
         socket.emit("get-initial-messages", messages);
-        console.log('send all-messages', messages,'__________');
+        console.log('send all-messages___________________________');
     })
-
-
 
     socket.on("all-chats", async (id) =>{
 
@@ -65,6 +69,7 @@ io.on('connection' , (socket)=>{
 
     socket.on('disconnect', ()=>{
         console.log(`User disonnected : ${socket.id}`);
+        activeUsers.delete(auth.id);
     })
 })
 
