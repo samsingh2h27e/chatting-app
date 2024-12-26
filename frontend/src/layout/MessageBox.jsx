@@ -42,14 +42,15 @@ const MessageBox = () => {
   const initialAllChats = [{ _id: "tutorial", username: "TUTORIAL" }];
   const initialMessages = [{sender:"tutorial", message:"the tutorial text will come here"}]
 
-  const [activeTab, setActiveTab] = useState(tabData[0]);
-  const [allChats, setAllChats] = useState(initialAllChats);
-  const [activeChat, setActiveChat] = useState(initialAllChats[0]);
-  const [messages, setMessages] = useState(initialMessages);
-  const [input, setInput] = useState("");
+  const [activeTab, setActiveTab] = useState(tabData[0]); /// left section (to select the active tab among :{all, unread, archieved})
+  const [allChats, setAllChats] = useState(initialAllChats);/// middle section (has the users we chatted with and a tutorial profile)
+  const [activeChat, setActiveChat] = useState(initialAllChats[0]);/// right section-heading (has the user whose chats we need to show)
+  const [messages, setMessages] = useState(initialMessages);/// right section-content (has the messages with the selected user)
+  const [input, setInput] = useState("");/// right section- input(to handle input for sending message)
   
 
   const onTabChange = (key) => {
+    /// left section (to select the active tab among :{all, unread, archieved})
     const tab = tabData.find((item) => item.key === key);
     if (tab) {
       setActiveTab(tab); //// write the logic to navigate
@@ -57,27 +58,25 @@ const MessageBox = () => {
   };
 
   const onChatChange = (key) => {
+    /// middle section (has the users we chatted with and a tutorial profile)
     const chat = allChats.find((item) => item._id === key);
-    
-    console.log(`current chat:`, chat)
-    if (chat) setActiveChat(chat); 
 
-    if (chat._id === "tutorial") {setMessages(initialMessages);return };
+    console.log(`current chat:`, chat);
+    if (chat) setActiveChat(chat);
+
+    if (chat._id === "tutorial") {
+      setMessages(initialMessages);
+      return;
+    }
 
     socketRef.current.emit("get-initial-messages", chat._id);
     // console.log(chat._id);
-
-
-
-    
   };
 
   // Initialize the socket connection in useEffect
-
   const [auth] = useAuth();
   useEffect(() => {
-    // Create the socket instance once
-    
+    // Create the socket instance once 
     socketRef.current = io("http://localhost:5000",
       {
         auth : {id:auth.id},
@@ -103,11 +102,10 @@ const MessageBox = () => {
 
     // get all-chats from the server
     socketRef.current.emit('all-chats', auth.id);
-    
+     
     socketRef.current.on('all-chats',(chats)=>{
       console.log(chats);//// here i am getting  "all-chats
-      setAllChats([initialAllChats[0], ...chats]);
-     
+      setAllChats([initialAllChats[0], ...chats]);   
     })
 
     // Clean up the socket connection when the component unmounts
@@ -120,10 +118,12 @@ const MessageBox = () => {
   const sendMessage = () => {
     console.log(`The input message: ${input}`);
     // Emit the message to the server
+
     if (socketRef.current) {
-      socketRef.current.emit("message", input);
+      const data = {sender_id:auth.id, message : input, receiver_id:activeChat._id};
+      socketRef.current.emit("message", data);
     }
-    setMessages((prev) => [...prev, { sender: "me", message: input }]);
+    // setMessages((prev) => [...prev, { sender_id: auth.id, message: input }]);///
     setInput("");
   };
   
