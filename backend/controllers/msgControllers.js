@@ -5,44 +5,72 @@ import { updateUserContactChatId } from "../helpers/queries.js";
 
 
 export const getAllChats = async( id)=>{
-    const user = await User.findById(id);
+    let user, resp;
+    try {
+      user = await User.findById(id);
+      resp = {success:true, data:user.user_contacts, message : 'sent all-chats'}
+    } catch (err) {
+      console.log("error while fetching user at getAllChats()")
+      resp = { success:false, data:null, message:'not able to send all-chats'};
+    }
 
-    return user.user_contacts;
-    // return user;
+    return resp;
+   
 }
 
 export const getAllMessages= async(selfId, peerId)=>{
-    const data = await User.findOne(
-      { _id: selfId, "user_contacts._id": peerId }, // Match the user and contact email
-      { "user_contacts.$": 1 } // Project only the matched contact
-    );
+    let data, resp; 
+    try {
+      data = await User.findOne(
+        { _id: selfId, "user_contacts._id": peerId }, // Match the user and contact email
+        { "user_contacts.$": 1 } // Project only the matched contact
+      );
+      
+    } catch (error) {
+      resp = {success:false, data:[], message:"error while finding user's user_contacts"}
+      return resp;
+    }
 
     let lastMsgId =  data.user_contacts[0].chat_id;
-    // console.log(data, lastMsgId);
     
-
     const messages = [];
 
-    while (lastMsgId !== "null"){
-        // console.log("he");
-        const currMsg = await Message.findById(lastMsgId);
+    while (lastMsgId !== "null" && lastMsgId !== null){
+        
+        let currMsg;
+
+        try {
+          currMsg = await Message.findById(lastMsgId);
+        } catch (error) {
+          resp={success:false, data:[], message:"error while collecting chat's messages"}
+          return resp;
+        }
+
         messages.push(currMsg);
         lastMsgId = currMsg.prev_msg_id;
-        // console.log(lastMsgId);
-        
-        
+ 
     }
     messages.reverse()
-    return messages;
+
+    resp = {success:true, data:messages, message:"sent all-messages"}
+    return resp;
     
 }
 
 
 export const storeOneMessage = async(data)=>{
-    const sender_receiver_data = await User.findOne(
+    let sender_receiver_data ,resp ;
+
+    try {
+      sender_receiver_data = await User.findOne(
       { _id: data.sender_id, "user_contacts._id": data.receiver_id }, // Match the user and contact email
       { "user_contacts.$": 1 } // Project only the matched contact
     );
+      
+    } catch (error) {
+      resp = {success:false, data:[], message : "failed while getting last-message-id"}
+      return resp;
+    }
 
     let last_msg_id = sender_receiver_data.user_contacts[0].chat_id;
     let last_msg;
@@ -52,12 +80,14 @@ export const storeOneMessage = async(data)=>{
             message_no:0,
             _id:"null"
         }
-
-        // console.log(last_msg);
-        
-    } else {
+   
+    }else {
+      try {
         last_msg = await Message.findById(last_msg_id);
-        // console.log(last_msg);
+      } catch (error) {
+        resp = {success:false, data:[], message:"error while getting the last-message using its _id"}
+        return resp;
+      } 
     }
 
    
@@ -71,21 +101,26 @@ export const storeOneMessage = async(data)=>{
       next_msg_id: "null",
     });
 
-    let message=null;
+    let message;
 
     try {
       message = await new_msg.save();
       console.log("message saved:", message);
     } catch (err) {
-      console.error("Error saving message:", err);
-      return null;
+      resp={success:false, data:[], message:"error while saving the message in 'messages' collection"};
+      return resp;
     } 
 
     
     await updateUserContactChatId(data.sender_id, data.receiver_id, new_msg._id );
     await updateUserContactChatId(data.receiver_id, data.sender_id, new_msg._id );
 
-    return message;
+    resp = {
+      success: true,
+      data: message,
+      message: "stored the message and updated lastMsgId",
+    };
+    return resp;
     
 
 }

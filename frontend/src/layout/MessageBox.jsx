@@ -1,36 +1,80 @@
-import React , {useState, useEffect, useRef} from 'react'
-import { Tabs } from 'antd';
+import React, { useState, useEffect, useRef } from "react";
+import { Tabs } from "antd";
 import { Col, Row } from "antd";
-import { io } from 'socket.io-client';
-import { useAuth } from '../context/authContext';
+import { io } from "socket.io-client";
+import { useAuth } from "../context/authContext";
 
+const LeftTabsMenu = (props) => {
+  return (
+    <Col
+      span={3}
+      style={{
+        height: "100vh",
+        backgroundColor: "#e0e0e0",
+      }}
+    >
+      <Tabs
+        style={{
+          minHeight: "100vh",
+          position: "sticky",
+          left: "0",
+        }}
+        onChange={props.onTabChange}
+        activeKey={props.activeTab.key}
+        defaultActiveKey="1" // Set the default active tab
+        tabPosition="left" // Position the tabs on the left
+        items={props.tabData.map((item) => ({
+          label: item.label, // The tab label
+          key: item.key, // Unique key for each tab
+        }))}
+      />
+    </Col>
+  );
+};
 
-const dummyPeople = Array.from({ length: 20 }, (_, personIndex) => {
-  const personName = `Person_${personIndex + 1}`;
+const AllChatsMenu = (p)=>{
+  return (
+  <Col
+    span={7}
+    style={{
+      overflowY: "scroll",
+      overflowX: "hidden",
+      height: "100vh",
+      backgroundColor: "#f5f5f5",
+      padding: "10px",
+    }}
+  >
+    <h3 style={{ display: "block", textAlign: "center" }}>
+      {p.activeTab.content}
+    </h3>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "flex-start", // Aligns the Tabs to the right
+        width: "100%",
+      }}
+    >
+      <Tabs
+        style={{}}
+        activeKey={p.activeChat._id}
+        onChange={p.onChatChange}
+        // defaultActiveKey="1" // Set the default active tab
+        tabPosition="right" // Position the tabs on the left
+        items={p.allChats.map((item) => ({
+          label: item.username, // The tab label
+          key: item._id, // Unique key for each tab
+        }))}
+      />
+    </div>
+  </Col>
+)};
 
-  return {
-    name: personName,
-    id : personIndex + 1,
-    messages: Array.from({ length: 40 }, (__, messageIndex) => ({
-      sender: messageIndex % 2 === 0 ? personName : "me", // Alternating sender
-      message: `This is message ${messageIndex + 1} from ${
-        messageIndex % 2 === 0 ? personName : "me"
-      }`,
-    })),
-  };
-});
-
-
-
+const LastSeenComponent = (props)=> {
+  return (<> {props.lastSeen}</>)
+}
 
 
 const MessageBox = () => {
-  
-  // let [socket, setSocket ] = useSocket();
-  // const socket = makeSocket();
-  // console.log(socket);
-  
-  // const socket = useRef(io("http://localhost:5000"));
   const socketRef = useRef(null);
 
   const tabData = [
@@ -40,14 +84,18 @@ const MessageBox = () => {
   ];
 
   const initialAllChats = [{ _id: "tutorial", username: "TUTORIAL" }];
-  const initialMessages = [{sender:"tutorial", message:"the tutorial text will come here"}]
+  const initialMessages = [
+    { sender: "tutorial", message: "the tutorial text will come here" },
+  ];
 
   const [activeTab, setActiveTab] = useState(tabData[0]); /// left section (to select the active tab among :{all, unread, archieved})
-  const [allChats, setAllChats] = useState(initialAllChats);/// middle section (has the users we chatted with and a tutorial profile)
-  const [activeChat, setActiveChat] = useState(initialAllChats[0]);/// right section-heading (has the user whose chats we need to show)
-  const [messages, setMessages] = useState(initialMessages);/// right section-content (has the messages with the selected user)
-  const [input, setInput] = useState("");/// right section- input(to handle input for sending message)
-  
+  const [allChats, setAllChats] = useState(initialAllChats); /// middle section (has the users we chatted with and a tutorial profile)
+  const [activeChat, setActiveChat] = useState(initialAllChats[0]); /// right section-heading (has the user whose chats we need to show)
+  const [messages, setMessages] = useState(initialMessages); /// right section-content (has the messages with the selected user)
+  const [input, setInput] = useState(""); /// right section- input(to handle input for sending message)
+  const [lastSeen, setLastSeen] = useState("")
+  const activeChatRef = useRef(activeChat._id);
+
 
   const onTabChange = (key) => {
     /// left section (to select the active tab among :{all, unread, archieved})
@@ -68,45 +116,82 @@ const MessageBox = () => {
       setMessages(initialMessages);
       return;
     }
-
+ 
     socketRef.current.emit("get-initial-messages", chat._id);
-    // console.log(chat._id);
   };
+
+  const sendMessage = () => {
+    console.log(`The input message: ${input}`);
+    // Emit the message to the server
+
+    if (socketRef.current) {
+      const data = {
+        sender_id: auth.id,
+        message: input,
+        receiver_id: activeChat._id,
+      };
+      socketRef.current.emit("message", data);
+    }
+    // setMessages((prev) => [...prev, { sender_id: auth.id, message: input }]);///
+    setInput("");
+  };
+
+  useEffect(() => {
+    activeChatRef.current = activeChat._id;
+  }, [activeChat]);
+
 
   // Initialize the socket connection in useEffect
   const [auth] = useAuth();
   useEffect(() => {
-    // Create the socket instance once 
-    socketRef.current = io("http://localhost:5000",
-      {
-        auth : {id:auth.id},
-      }
-    );
+    // Create the socket instance once
+    socketRef.current = io("http://localhost:5000", {
+      auth: { id: auth.id },
+    });
 
-    // Log connection
+   
     socketRef.current.on("connect", () => {
       console.log("Connected to server:", socketRef.current.id);
     });
 
     // Listen for messages from the server
     socketRef.current.on("message", (msg) => {
-      console.log("Message from server:", msg);
-      setMessages((prevMessages) => [...prevMessages, msg]);
+      if (msg.success) {
+        console.log("Message from server:", msg);
+        setMessages((prevMessages) => [...prevMessages, msg.data]);
+      } else {
+        alert("unable to send message");
+      }
     });
 
     socketRef.current.on("get-initial-messages", (msgs) => {
-      console.log("initial messages from server:", msgs);
-      setMessages((prevMessages) => msgs);
+      if (msgs.success) {
+        console.log("received the past messages from server:");
+        
+        setMessages((prevMessages) => msgs.data);
+      } else {
+        alert("failed to receive the past messages");
+      }
     });
 
-
     // get all-chats from the server
-    socketRef.current.emit('all-chats', auth.id);
-     
-    socketRef.current.on('all-chats',(chats)=>{
-      console.log(chats);//// here i am getting  "all-chats
-      setAllChats([initialAllChats[0], ...chats]);   
-    })
+    socketRef.current.emit("all-chats", auth.id);
+
+    socketRef.current.on("all-chats", (chats) => {
+      if (chats.success) {
+        console.log("received all chats from server");
+        setAllChats([initialAllChats[0], ...chats.data]);
+      } else {
+        alert("failed to receive all-chats from server");
+      }
+    });
+
+    socketRef.current.on("last-seen", (data) => {
+    console.log(data);
+    if (data._id === activeChatRef.current) {
+      setLastSeen(data.lastSeen);
+    }
+  });
 
     // Clean up the socket connection when the component unmounts
     return () => {
@@ -115,83 +200,23 @@ const MessageBox = () => {
     };
   }, []); // Empty dependency array ensures this runs only once
 
-  const sendMessage = () => {
-    console.log(`The input message: ${input}`);
-    // Emit the message to the server
-
-    if (socketRef.current) {
-      const data = {sender_id:auth.id, message : input, receiver_id:activeChat._id};
-      socketRef.current.emit("message", data);
-    }
-    // setMessages((prev) => [...prev, { sender_id: auth.id, message: input }]);///
-    setInput("");
-  };
   
   return (
     <Row style={{ height: "100vh", overflow: "hidden" }}>
       {/* Sidebar : Left Column: Non-scrollable */}
-      <Col
-        span={3}
-        style={{
-          height: "100vh",
-          backgroundColor: "#e0e0e0",
-          // padding: "10px",
-          // display: "flex",
-          // alignItems: "center",
-          // justifyContent: "center",
-        }}
-      >
-        <Tabs
-          style={{
-            minHeight: "100vh",
-            position: "sticky",
-            left: "0",
-          }}
-          onChange={onTabChange}
-          activeKey={activeTab.key}
-          defaultActiveKey="1" // Set the default active tab
-          tabPosition="left" // Position the tabs on the left
-          items={tabData.map((item) => ({
-            label: item.label, // The tab label
-            key: item.key, // Unique key for each tab
-          }))}
-        />
-      </Col>
+      <LeftTabsMenu
+        tabData={tabData}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+      />
 
       {/* People : Middle Column: Scrollable */}
-      <Col
-        span={7}
-        style={{
-          overflowY: "scroll",
-          overflowX: "hidden",
-          height: "100vh",
-          backgroundColor: "#f5f5f5",
-          padding: "10px",
-        }}
-      >
-        <h3 style={{ display: "block", textAlign: "center" }}>
-          {activeTab.content}
-        </h3>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-start", // Aligns the Tabs to the right
-            width: "100%",
-          }}
-        >
-          <Tabs
-            style={{}}
-            activeKey={activeChat._id}
-            onChange={onChatChange}
-            // defaultActiveKey="1" // Set the default active tab
-            tabPosition="right" // Position the tabs on the left
-            items={allChats.map((item) => ({
-              label: item.username, // The tab label
-              key: item._id, // Unique key for each tab
-            }))}
-          />
-        </div>
-      </Col>
+      <AllChatsMenu
+        activeTab={activeTab}
+        allChats={allChats}
+        activeChat={activeChat}
+        onChatChange={onChatChange}
+      />
 
       {/* Chats with the person : Right Column: Scrollable */}
       <Col
@@ -204,9 +229,10 @@ const MessageBox = () => {
           borderLeft: "solid black 1px",
         }}
       >
-        <h3 style={{ display: "block", textAlign: "center" }}>
-          {activeChat.username}
-        </h3>
+        <div style={{ display: "block", display:"flex", justifyContent:"space-between", borderBottom:"5px groove "}}>
+          <h2>{activeChat.username}</h2>
+          <h4><LastSeenComponent lastSeen={lastSeen}/></h4>
+        </div>
         <input
           type="text"
           value={input}
@@ -250,6 +276,7 @@ const MessageBox = () => {
         {/* 63 */}
       </Col>
     </Row>
-  );};
+  );
+};
 
 export default MessageBox;
