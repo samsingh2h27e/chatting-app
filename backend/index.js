@@ -5,7 +5,7 @@ import http from 'http';
 import env from "dotenv";
 import {connectDB} from './db/connectDB.js';
 import authRoutes from "./routes/authRoutes.js";
-import { getAllChats, getAllMessages, storeOneMessage } from "./controllers/msgControllers.js";
+import { getAllChats, getAllMessages, resetUnreadMessage, storeOneMessage } from "./controllers/msgControllers.js";
 import { getLastSeenDateTime, setLastSeenDateTime } from "./helpers/queries.js";
 import {User} from "./db/userModel.js";
 import { concatenateLexicographically } from "./helpers/stringConcat.js";
@@ -77,6 +77,7 @@ io.on('connection' , async(socket)=>{
 
     socket.on("get-initial-messages", async (peerId)=>{
         const messages = await getAllMessages(auth.id, peerId);
+        const unread_message_resp = await resetUnreadMessage(auth.id, peerId);
         socket.emit("get-initial-messages", messages);
         const lastSeenData = await lastSeenInfo(peerId)
         socket.emit('last-seen', lastSeenData);
@@ -87,7 +88,7 @@ io.on('connection' , async(socket)=>{
     socket.on("all-chats", async (id) =>{
 
         const allChats = await getAllChats(id) ;
-        // console.log(allChats);
+        console.log(allChats);
         socket.emit("all-chats", allChats);
         console.log(allChats.message);
         console.log("_____");

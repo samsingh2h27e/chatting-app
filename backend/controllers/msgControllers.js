@@ -125,3 +125,28 @@ export const storeOneMessage = async(data)=>{
     
 
 }
+
+export const resetUnreadMessage = async (self_id, peer_id)=>{
+  try {
+    const result = await User.findOneAndUpdate(
+      { _id: self_id, "user_contacts._id": peer_id }, // Match the user and specific contact
+      {
+        $set: {
+          "user_contacts.$.unread_messages": 0, // Update only the chat_id
+        },
+      },
+      { new: true } // Return the updated document
+    );
+
+    if (result) {
+      console.log("unread_messages reset to zero");
+    } else {
+      console.log("No matching contact found.");
+    }
+  } catch (error) {
+    console.error("Error reseting unread_messages:", error);
+  }
+
+  return 1;
+
+}

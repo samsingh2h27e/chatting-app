@@ -75,7 +75,7 @@ const AllChatsMenu = (p)=>{
             // defaultActiveKey="1" // Set the default active tab
             tabPosition="right" // Position the tabs on the left
             items={p.allChats.map((item) => ({
-              label: item.username, // The tab label
+              label:`${item.username}__${item.unread_messages}`, // The tab label
               key: item._id, // Unique key for each tab
             }))}
           />
@@ -121,7 +121,7 @@ const MessageBox = () => {
   ];
 
   const [activeTab, setActiveTab] = useState(tabData[0]); /// left section (to select the active tab among :{all, unread, archieved})
-  const [allChats, setAllChats] = useState(initialAllChats); /// middle section (has the users we chatted with and a tutorial profile)
+  const [allChats, setAllChats] = useImmer(initialAllChats); /// middle section (has the users we chatted with and a tutorial profile)
   const [activeChat, setActiveChat] = useState(initialAllChats[0]); /// right section-heading (has the user whose chats we need to show)
   const [messages, setMessages] = useImmer(initialMessages); /// right section-content (has the messages with the selected user)
   const [input, setInput] = useState(""); /// right section- input(to handle input for sending message)
@@ -199,9 +199,18 @@ const MessageBox = () => {
           setMessages((prevMessages) => {prevMessages.push(msg.data)});
         } else{
           alert(`${sender_id} sent you a message`);
+          setAllChats(allChats =>{
+            let target_chat = allChats.find(chat => chat._id === sender_id);
+            if (target_chat){
+              target_chat.unread_message=1;
+            } else{
+              ///
+            }
+          })
         }
       } else {
-        alert("unable to send message");
+        alert(msg.message);
+        setAllChats()
       }
     });
 
@@ -232,6 +241,7 @@ const MessageBox = () => {
       if(message.message === "added"){
         socketRef.current.emit("all-chats", auth.id);
         setActiveTab(tabData[0]);
+
       }
       else if(message.message === "exists"){
         alert("your friend is already connected with you");
