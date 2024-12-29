@@ -7,7 +7,8 @@ import {connectDB} from './db/connectDB.js';
 import authRoutes from "./routes/authRoutes.js";
 import { getAllChats, getAllMessages, storeOneMessage } from "./controllers/msgControllers.js";
 import { getLastSeenDateTime, setLastSeenDateTime } from "./helpers/queries.js";
-
+import {User} from "./db/userModel.js";
+import { concatenateLexicographically } from "./helpers/stringConcat.js";
 
 env.config();
 const PORT = process.env.PORT || 5000;
@@ -91,6 +92,46 @@ io.on('connection' , async(socket)=>{
         console.log(allChats.message);
         console.log("_____");
 
+    })
+
+    socket.on("add-friend", async (f,d)=>{
+        const friend = await User.findById(f.friend_id);
+        const user = await User.findById(d.user_id);
+        let mess = "";
+        if(friend){
+            let bool = friend.user_contacts.findIndex((map)=>{
+                return map._id === d.user_id
+            });
+            if(bool==-1){
+                mess = "added";
+                let newContact = {
+                    _id: friend._id,
+                    username: friend.username,
+                    chat_id: "null",
+                    user_id: friend._id,
+                }
+                user.user_contacts.push(newContact);
+        
+                newContact = {
+                    _id: user._id,
+                    username: user.username,
+                    chat_id: "null",
+                    user_id: user._id,
+                }
+                friend.user_contacts.push(newContact);
+        
+                await user.save();
+                await friend.save();
+            }
+            else{
+                mess = "exists"
+            }
+        }
+        else{
+            mess = "friend does'nt exists";
+        }
+        const m = {message : mess};
+        socket.emit("friend-added",m);
     })
 
     socket.on('disconnect', async()=>{

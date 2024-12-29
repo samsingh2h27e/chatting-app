@@ -108,6 +108,7 @@ export const storeOneMessage = async(data)=>{
       console.log("message saved:", message);
     } catch (err) {
       resp={success:false, data:[], message:"error while saving the message in 'messages' collection"};
+      console.log(err);
       return resp;
     } 
 
