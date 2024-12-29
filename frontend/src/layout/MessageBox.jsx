@@ -33,6 +33,57 @@ const LeftTabsMenu = (props) => {
 };
 
 const AllChatsMenu = (p)=>{
+  const [friend_id,setId] = useState("")
+  function handleClick(e) {
+    e.preventDefault();
+    const user_id = p.id;
+    p.socketRef.current.emit("add-friend",{friend_id},{user_id})
+    setId("");
+  }
+  const renderContent = ()=>{
+    if(p.activeTab.key==4){
+      return <div>
+        <h3>Add new Friends</h3>
+        <form>
+          <input name="friends" 
+          value={friend_id}
+          onChange={(e)=>{
+            setId(e.target.value);
+          }}
+          placeholder="Enter email id to be searched" type="email"></input>
+          <button type="submit" onClick={handleClick}>Add friend</button>
+        </form>
+      </div>
+    }
+    return (
+      <div>
+        <h3 style={{ display: "block", textAlign: "center" }}>
+          {p.activeTab.content}
+        </h3>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-start", // Aligns the Tabs to the right
+            width: "100%",
+          }}
+        >
+          <Tabs
+            style={{}}
+            activeKey={p.activeChat._id}
+            onChange={p.onChatChange}
+            // defaultActiveKey="1" // Set the default active tab
+            tabPosition="right" // Position the tabs on the left
+            items={p.allChats.map((item) => ({
+              label: item.username, // The tab label
+              key: item._id, // Unique key for each tab
+            }))}
+          />
+        </div>
+      </div>
+    );
+  };
+
+
   return (
   <Col
     span={7}
@@ -44,28 +95,7 @@ const AllChatsMenu = (p)=>{
       padding: "10px",
     }}
   >
-    <h3 style={{ display: "block", textAlign: "center" }}>
-      {p.activeTab.content}
-    </h3>
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "flex-start", // Aligns the Tabs to the right
-        width: "100%",
-      }}
-    >
-      <Tabs
-        style={{}}
-        activeKey={p.activeChat._id}
-        onChange={p.onChatChange}
-        // defaultActiveKey="1" // Set the default active tab
-        tabPosition="right" // Position the tabs on the left
-        items={p.allChats.map((item) => ({
-          label: item.username, // The tab label
-          key: item._id, // Unique key for each tab
-        }))}
-      />
-    </div>
+    {renderContent()}
   </Col>
 )};
 
@@ -81,6 +111,7 @@ const MessageBox = () => {
     { label: "ALL", key: "1", content: "all-chats" },
     { label: "UNREAD", key: "2", content: "unread-chats" },
     { label: "ARCHIEVED", key: "3", content: "archieved-chats" },
+    {label: "ADD FRIENDS", key: "4", content: "adding-friends"},
   ];
 
   const initialAllChats = [{ _id: "tutorial", username: "TUTORIAL" }];
@@ -186,6 +217,21 @@ const MessageBox = () => {
       }
     });
 
+    socketRef.current.on("friend-added", async (message)=>{
+      console.log(message.message)
+      if(message.message === "added"){
+        socketRef.current.emit("all-chats", auth.id);
+        setActiveTab(tabData[0]);
+      }
+      else if(message.message === "exists"){
+        alert("your friend is already connected with you");
+      }
+      else{
+        alert("your friend doesn't use our website");
+      }
+
+    })
+
     socketRef.current.on("last-seen", (data) => {
     console.log(data);
     if (data._id === activeChatRef.current) {
@@ -216,6 +262,8 @@ const MessageBox = () => {
         allChats={allChats}
         activeChat={activeChat}
         onChatChange={onChatChange}
+        socketRef={socketRef}
+        id={auth.id}
       />
 
       {/* Chats with the person : Right Column: Scrollable */}
