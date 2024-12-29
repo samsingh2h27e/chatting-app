@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useImmer } from "use-immer";
 import { Tabs } from "antd";
 import { Col, Row } from "antd";
 import { io } from "socket.io-client";
@@ -91,9 +92,9 @@ const MessageBox = () => {
   const [activeTab, setActiveTab] = useState(tabData[0]); /// left section (to select the active tab among :{all, unread, archieved})
   const [allChats, setAllChats] = useState(initialAllChats); /// middle section (has the users we chatted with and a tutorial profile)
   const [activeChat, setActiveChat] = useState(initialAllChats[0]); /// right section-heading (has the user whose chats we need to show)
-  const [messages, setMessages] = useState(initialMessages); /// right section-content (has the messages with the selected user)
+  const [messages, setMessages] = useImmer(initialMessages); /// right section-content (has the messages with the selected user)
   const [input, setInput] = useState(""); /// right section- input(to handle input for sending message)
-  const [lastSeen, setLastSeen] = useState("")
+  const [lastSeen, setLastSeen] = useImmer("")
   const activeChatRef = useRef(activeChat._id);
 
 
@@ -103,6 +104,8 @@ const MessageBox = () => {
     if (tab) {
       setActiveTab(tab); //// write the logic to navigate
     }
+
+    
   };
 
   const onChatChange = (key) => {
@@ -156,9 +159,16 @@ const MessageBox = () => {
 
     // Listen for messages from the server
     socketRef.current.on("message", (msg) => {
-      if (msg.success) {
+      
+      if (msg.success ) {
         console.log("Message from server:", msg);
-        setMessages((prevMessages) => [...prevMessages, msg.data]);
+        
+        const sender_id = msg.data.sender_id;
+        if (sender_id === activeChatRef._id || sender_id === auth.id ){
+          setMessages((prevMessages) => {prevMessages.push(msg.data)});
+        } else{
+          alert("non active chat messaged you");
+        }
       } else {
         alert("unable to send message");
       }
@@ -179,7 +189,7 @@ const MessageBox = () => {
 
     socketRef.current.on("all-chats", (chats) => {
       if (chats.success) {
-        console.log("received all chats from server");
+        console.log("received all chats from server", chats.data);
         setAllChats([initialAllChats[0], ...chats.data]);
       } else {
         alert("failed to receive all-chats from server");
