@@ -167,7 +167,7 @@ const MessageBox = () => {
         if (sender_id === activeChatRef._id || sender_id === auth.id ){
           setMessages((prevMessages) => {prevMessages.push(msg.data)});
         } else{
-          alert("non active chat messaged you");
+          alert(`${sender_id} sent you a message`);
         }
       } else {
         alert("unable to send message");
