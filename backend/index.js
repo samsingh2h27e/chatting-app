@@ -26,7 +26,7 @@ app.use(cors());
 
 
 ///routes
-app.use("/api/auth", authRoutes);
+app.use("/api", authRoutes);
 
 const activeUsers = new Map();
 const lastSeenInfo = async(id)=>{

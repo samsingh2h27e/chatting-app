@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState, useEffect, useRef } from "react";
 import { useImmer } from "use-immer";
 import { Tabs } from "antd";
@@ -74,12 +75,23 @@ const AllChatsMenu = (p)=>{
             onChange={p.onChatChange}
             // defaultActiveKey="1" // Set the default active tab
             tabPosition="right" // Position the tabs on the left
-            items={p.allChats.map((item) => ({
-              label:`${item.username}__${item.unread_messages}`, // The tab label
-              key: item._id, // Unique key for each tab
-            }))}
+            items={p.allChats.map((item) => {
+              if (item.unread_messages){
+                return {
+                  label: `${item.username}  (${item.unread_messages})`, // The tab label
+                  key: item._id, // Unique key for each tab
+                };
+              } else{
+                return {
+                  label: `${item.username}`, // The tab label
+                  key: item._id, // Unique key for each tab
+                };
+              }
+
+            })}
           />
         </div>
+        
       </div>
     );
   };
@@ -115,18 +127,19 @@ const MessageBox = () => {
     {label: "ADD FRIENDS", key: "4", content: "adding-friends"},
   ];
 
-  const initialAllChats = [{ _id: "tutorial", username: "TUTORIAL" }];
+  const initialAllChats = [{ _id: "tutorial", username: "TUTORIAL", unread_messages:0 }];
   const initialMessages = [
     { sender: "tutorial", message: "the tutorial text will come here" },
   ];
 
-  const [activeTab, setActiveTab] = useState(tabData[0]); /// left section (to select the active tab among :{all, unread, archieved})
-  const [allChats, setAllChats] = useImmer(initialAllChats); /// middle section (has the users we chatted with and a tutorial profile)
+  const [activeTab, setActiveTab] = useState(tabData[0]); /// left section (to select the active tab among :{all, unread, archieved, add-friends})
+  const [allChats, setAllChats] = useImmer(initialAllChats); /// middle section (has the {users we chatted with and a tutorial profile} or {the dashboard to add-friends})
   const [activeChat, setActiveChat] = useState(initialAllChats[0]); /// right section-heading (has the user whose chats we need to show)
+  const activeChatRef = useRef(activeChat._id);
   const [messages, setMessages] = useImmer(initialMessages); /// right section-content (has the messages with the selected user)
   const [input, setInput] = useState(""); /// right section- input(to handle input for sending message)
   const [lastSeen, setLastSeen] = useImmer("")
-  const activeChatRef = useRef(activeChat._id);
+  
 
 
   const onTabChange = (key) => {
@@ -138,11 +151,11 @@ const MessageBox = () => {
 
     
   };
-
+  
   const onChatChange = (key) => {
     /// middle section (has the users we chatted with and a tutorial profile)
     const chat = allChats.find((item) => item._id === key);
-
+    
     console.log(`current chat:`, chat);
     if (chat) setActiveChat(chat);
 
@@ -150,7 +163,7 @@ const MessageBox = () => {
       setMessages(initialMessages);
       return;
     }
- 
+    
     socketRef.current.emit("get-initial-messages", chat._id);
   };
 
@@ -175,6 +188,8 @@ const MessageBox = () => {
   }, [activeChat]);
 
 
+
+
   // Initialize the socket connection in useEffect
   const [auth] = useAuth();
   useEffect(() => {
@@ -195,16 +210,28 @@ const MessageBox = () => {
         console.log("Message from server:", msg);
         
         const sender_id = msg.data.sender_id;
-        if (sender_id === activeChatRef._id || sender_id === auth.id ){
+        if (sender_id === activeChatRef.current || sender_id === auth.id ){
           setMessages((prevMessages) => {prevMessages.push(msg.data)});
         } else{
           alert(`${sender_id} sent you a message`);
+          var q1;
+          (async()=>{/// updates unread message in db
+            let response = await axios.post("http://localhost:5000/api/db/user/user-contacts/unread-messages", {
+            _id: auth.id, // Send flat key-value pairs
+            friend_id: sender_id,
+          });
+      console.log(response.data.message);
+      
+
+          })();
           setAllChats(allChats =>{
-            let target_chat = allChats.find(chat => chat._id === sender_id);
+            let target_chat = allChats.find((chat) => chat._id === sender_id);
+            console.log(target_chat);
+            
             if (target_chat){
-              target_chat.unread_message=1;
+              target_chat.unread_messages++;
             } else{
-              ///
+              
             }
           })
         }
@@ -217,8 +244,21 @@ const MessageBox = () => {
     socketRef.current.on("get-initial-messages", (msgs) => {
       if (msgs.success) {
         console.log("received the past messages from server:");
+
+      
+        setAllChats((allChats) => {
+          let target_chat = allChats.find(
+            (chat) => chat._id === activeChatRef.current
+          );
+          if (target_chat) {
+            target_chat.unread_messages = 0;
+            console.log("reseted the unread_messages");
+          } else {
+          }
+        });
         
         setMessages((prevMessages) => msgs.data);
+        
       } else {
         alert("failed to receive the past messages");
       }
@@ -230,7 +270,7 @@ const MessageBox = () => {
     socketRef.current.on("all-chats", (chats) => {
       if (chats.success) {
         console.log("received all chats from server", chats.data);
-        setAllChats([initialAllChats[0], ...chats.data]);
+        setAllChats(chats.data);
       } else {
         alert("failed to receive all-chats from server");
       }
