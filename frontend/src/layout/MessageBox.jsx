@@ -3,6 +3,8 @@ import { Tabs } from "antd";
 import { Col, Row } from "antd";
 import { io } from "socket.io-client";
 import { useAuth } from "../context/authContext";
+import './input.css';
+
 
 const LeftTabsMenu = (props) => {
   return (
@@ -106,6 +108,13 @@ const LastSeenComponent = (props)=> {
 
 const MessageBox = () => {
   const socketRef = useRef(null);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+    }
+  };
 
   const tabData = [
     { label: "ALL", key: "1", content: "all-chats" },
@@ -151,7 +160,9 @@ const MessageBox = () => {
     socketRef.current.emit("get-initial-messages", chat._id);
   };
 
-  const sendMessage = () => {
+  const sendMessage = (e) => {
+    e.preventDefault();
+
     console.log(`The input message: ${input}`);
     // Emit the message to the server
 
@@ -166,6 +177,10 @@ const MessageBox = () => {
     // setMessages((prev) => [...prev, { sender_id: auth.id, message: input }]);///
     setInput("");
   };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     activeChatRef.current = activeChat._id;
@@ -270,7 +285,6 @@ const MessageBox = () => {
       <Col
         span={14}
         style={{
-          overflowY: "scroll",
           height: "100vh",
           backgroundColor: "#f0f0f0",
           padding: "10px",
@@ -281,45 +295,48 @@ const MessageBox = () => {
           <h2>{activeChat.username}</h2>
           <h4><LastSeenComponent lastSeen={lastSeen}/></h4>
         </div>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your message"
-          style={{ marginRight: "10px" }}
-        />
-        <button onClick={sendMessage}>Send</button>
-        <div>
-          {messages.map((message, index) => {
-            const msgStyle = {
-              display: "flex",
-              // border: "solid black 1px",
-              padding: "5px",
-              margin: "10px",
-              justifyContent: "flex-start",
-            };
+        <div className="container">
+          <div className="msg-class" ref={messagesEndRef}>
+            {messages.map((message, index) => {
+              const msgStyle = {
+                display: "flex",
+                // border: "solid black 1px",
+                padding: "5px",
+                margin: "10px",
+                justifyContent: "flex-start",
+              };
 
-            const msgItemStyle = {
-              border: "solid black 1px",
-              padding: "10px",
-              borderRadius: "0px 0px 15px 0px",
-              backgroundColor: "#ffffff",
-              color: "#333333",
-            };
+              const msgItemStyle = {
+                border: "solid black 1px",
+                padding: "10px",
+                borderRadius: "0px 0px 15px 0px",
+                backgroundColor: "#ffffff",
+                color: "#333333",
+              };
 
-            if (message.sender_id === auth.id) {
-              msgStyle.justifyContent = "flex-end";
-              msgItemStyle.backgroundColor = "#d1e7fd";
-              msgItemStyle.borderRadius = "0px 0px 0px 15px";
-              msgItemStyle.color = "#333333";
-            }
+              if (message.sender_id === auth.id) {
+                msgStyle.justifyContent = "flex-end";
+                msgItemStyle.backgroundColor = "#d1e7fd";
+                msgItemStyle.borderRadius = "0px 0px 0px 15px";
+                msgItemStyle.color = "#333333";
+              }
 
-            return (
-              <div key={index} style={msgStyle}>
-                <div style={msgItemStyle}> {message.message}</div>
-              </div>
-            );
-          })}
+              return (
+                <div key={index} style={msgStyle}>
+                  <div style={msgItemStyle}> {message.message}</div>
+                </div>
+              );
+            })}
+          </div>
+          <form onSubmit={sendMessage} className="ip-bt">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type your message"
+            />
+            <button type="submit">Send</button>
+          </form>
         </div>
         {/* 63 */}
       </Col>
