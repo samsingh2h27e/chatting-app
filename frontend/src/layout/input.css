@@ -1,0 +1,23 @@
+.container{
+    display: flex;
+    flex-direction: column;
+    height: 95vh;
+}
+
+.msg-class{
+    height: 85vh;
+    overflow-y: scroll;
+}
+
+.ip-bt{
+    display: flex;
+    width: 100%;
+}
+
+.ip-bt input{
+    width: 800vw;
+}
+
+ip-bt button{
+    height: 100%;
+}
