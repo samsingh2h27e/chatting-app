@@ -46,18 +46,30 @@ const AllChatsMenu = (p)=>{
   }
   const renderContent = ()=>{
     if(p.activeTab.key==4){
-      return <div>
-        <h3>Add new Friends</h3>
-        <form>
-          <input name="friends" 
-          value={friend_id}
-          onChange={(e)=>{
-            setId(e.target.value);
-          }}
-          placeholder="Enter email id to be searched" type="email"></input>
-          <button type="submit" onClick={handleClick}>Add friend</button>
-        </form>
-      </div>
+      return (
+        <div>
+          <h3 style={{ textAlign: "center" }}>Add new Friends</h3>
+          <form>
+            <input
+              name="friends"
+              style={{ margin: "1vh"  }}
+              value={friend_id}
+              onChange={(e) => {
+                setId(e.target.value);
+              }}
+              placeholder="Search by email-id"
+              type="email"
+            ></input>
+            <button
+              style={{ margin: "1vh", width:"fit-content" }}
+              type="submit"
+              onClick={handleClick}
+            >
+              Add friend
+            </button>
+          </form>
+        </div>
+      );
     }
     return (
       <div>
@@ -130,11 +142,11 @@ const MessageBox = () => {
   };
 
   const tabData = [
-    { label: "ALL", key: "1", content: "all-chats" },
-    { label: "UNREAD", key: "2", content: "unread-chats" },
-    { label: "ARCHIEVED", key: "3", content: "archieved-chats" },
-    {label: "ADD FRIENDS", key: "4", content: "adding-friends"},
-  ];
+    { label: "ALL CHATS", key: "1", content: "ALL-CHATS" },
+    // { label: "UNREAD", key: "2", content: "unread-chats" },
+    // { label: "ARCHIEVED", key: "3", content: "archieved-chats" },  
+    {label: "ADD FRIENDS", key: "4", content: "ADD-FRIENDS"},
+  ];  
 
   const initialAllChats = [{ _id: "tutorial", username: "TUTORIAL", unread_messages:0 }];
   const initialMessages = [
@@ -228,8 +240,7 @@ const MessageBox = () => {
         if (sender_id === activeChatRef.current || sender_id === auth.id ){
           setMessages((prevMessages) => {prevMessages.push(msg.data)});
         } else{
-          alert(`${sender_id} sent you a message`);
-          var q1;
+          alert(`${sender_id} sent you a message`); 
           (async()=>{/// updates unread message in db
             let response = await axios.post("http://localhost:5000/api/db/user/user-contacts/unread-messages", {
             _id: auth.id, // Send flat key-value pairs
@@ -246,13 +257,13 @@ const MessageBox = () => {
             if (target_chat){
               target_chat.unread_messages++;
             } else{
-              
+              allChats.push({_id : sender_id,username:sender_id, unread_messages:1})
             }
           })
         }
       } else {
-        alert(msg.message);
-        setAllChats()
+        alert("You may have some unread message");
+        
       }
     });
 

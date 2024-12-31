@@ -10,14 +10,18 @@ const Navbar = () => {
   const [activeTab, setActiveTab] = useState("1"); // State to store the active tab key
 
   // Define an array of three tab items
-  let label = "Logout";
-  if (auth.id === null) label = "Login"
+  let login_label = "Login";
+  let profile_label = "Guest";
+  if (auth.id !== null) {
+    login_label = "Logout"
+    profile_label= auth.id;
+  }
 
   const tabItems = [
     { label: "Chats", key: "1", link: "/" },
-    { label: "Settings", key: "2", link: "/settings" },
-    { label: label, key: "3", link: "/login" },
+    { label: login_label, key: "3", link: "/login" },
     { label: "Register", key: "4", link: "/register" },
+    // { label: profile_label, key: "2", link: "/settings", disabled: true },
   ];
 
   
@@ -47,13 +51,17 @@ const Navbar = () => {
   }, [location, tabItems]);
 
   return (
-    <Tabs
-      activeKey={activeTab} // Set the active tab using the activeTab state
-      defaultActiveKey="1"
-      centered
-      items={tabItems}
-      onChange={onTabChange} // Trigger `onTabChange` when a tab is clicked
-    />
+    <>
+    Hello {profile_label}!!
+      <Tabs
+        activeKey={activeTab} // Set the active tab using the activeTab state
+        defaultActiveKey="1"
+        centered
+        items={tabItems}
+        onChange={onTabChange} // Trigger `onTabChange` when a tab is clicked
+      />
+      
+    </>
   );
 };
 
