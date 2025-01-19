@@ -45,20 +45,20 @@ const lastSeenInfo = async(id)=>{
 
 io.on('connection' , async(socket)=>{
     const auth = socket.handshake.auth;
-    console.log(`User connected \nsocket-id : ${socket.id}, username :${auth.id} `);
-    console.log('_____');
+    // console.log(`User connected \nsocket-id : ${socket.id}, username :${auth.id} `);
+    // console.log('_____');
     activeUsers.set(auth.id, socket.id);
     io.emit('last-seen', await lastSeenInfo(auth.id));
  
     socket.on('message', async(data)=>{
 
-        console.log('received data from client:\n',data);
-        console.log("_____");
+        // console.log('received data from client:\n',data);
+        // console.log("_____");
         const dbResponse = await storeOneMessage(data);
         // console.log(dbResponse);
 
         if (!dbResponse.success) {
-            console.log(dbResponse.message);
+            // console.log(dbResponse.message);
             socket.emit("message", dbResponse);
             return;
         }
@@ -66,13 +66,13 @@ io.on('connection' , async(socket)=>{
         
         if (activeUsers.has(data.receiver_id)){ 
             io.to(activeUsers.get(data.receiver_id)).emit('message',dbResponse);
-            console.log("Sent message to receiver:");
-            console.log("_____");
+            // console.log("Sent message to receiver:");
+            // console.log("_____");
         }
        
         socket.emit('message',dbResponse);
-        console.log("Sent message to sender");
-        console.log("_____");
+        // console.log("Sent message to sender");
+        // console.log("_____");
     })
 
     socket.on("get-initial-messages", async (peerId)=>{
@@ -81,17 +81,17 @@ io.on('connection' , async(socket)=>{
         socket.emit("get-initial-messages", messages);
         const lastSeenData = await lastSeenInfo(peerId)
         socket.emit('last-seen', lastSeenData);
-        console.log(messages.message ,lastSeenData);
-        console.log("_____");
+        // console.log(messages.message ,lastSeenData);
+        // console.log("_____");
     })
 
     socket.on("all-chats", async (id) =>{
 
         const allChats = await getAllChats(id) ;
-        console.log(allChats);
+        // console.log(allChats);
         socket.emit("all-chats", allChats);
-        console.log(allChats.message);
-        console.log("_____");
+        // console.log(allChats.message);
+        // console.log("_____");
 
     })
 
@@ -136,10 +136,10 @@ io.on('connection' , async(socket)=>{
     })
 
     socket.on('disconnect', async()=>{
-        console.log(`User disonnected : ${socket.id}`);
-        console.log("_____");
+        // console.log(`User disonnected : ${socket.id}`);
+        // console.log("_____");
         activeUsers.delete(auth.id);
-        console.log( await setLastSeenDateTime(auth.id));
+        // console.log( await setLastSeenDateTime(auth.id));
         io.emit("last-seen", await lastSeenInfo(auth.id));
     })
 })
@@ -148,7 +148,7 @@ io.on('connection' , async(socket)=>{
 const run= async () =>{
     await connectDB();
     server.listen(PORT, ()=> {
-        console.log(`Server is running on http://localhost:${PORT}`);       
+        // console.log(`Server is running on http://localhost:${PORT}`);       
     });
  }
 

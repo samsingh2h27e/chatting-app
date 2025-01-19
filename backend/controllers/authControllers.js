@@ -16,9 +16,9 @@ const createUser = async (data) => {//// data = object containing user's provide
 
   try {
     const user = await newUser.save();
-    console.log("User saved:", user);
+    // console.log("User saved:", user);
   } catch (err) {
-    console.error("Error saving user:", err);
+    // console.error("Error saving user:", err);
   }
 };
 
@@ -30,7 +30,7 @@ const findUser = async (data)=>{ /// data = the email which is _id in the our do
 
 
 export const registerController = async ( req, res) =>{
-    console.log(req.body, "client is sending  his register data in post req");///
+    // console.log(req.body, "client is sending  his register data in post req");///
     const exists = await existingUser(req.body.email);
     
     

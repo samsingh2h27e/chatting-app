@@ -13,7 +13,7 @@ export const getAllChats = async (id) => {
       message: "sent all-chats",
     };
   } catch (err) {
-    console.log("error while fetching user at getAllChats()");
+    // console.log("error while fetching user at getAllChats()");
     resp = {
       success: false,
       data: null,
@@ -87,7 +87,7 @@ export const storeOneMessage = async (data) => {
   let last_msg_id = sender_receiver_data.user_contacts[0].chat_id;
   let last_msg;
   if (last_msg_id === "null") {
-    console.log("no prev message");
+    // console.log("no prev message");
     last_msg = {
       message_no: 0,
       _id: "null",
@@ -121,14 +121,14 @@ export const storeOneMessage = async (data) => {
 
   try {
     message = await new_msg.save();
-    console.log("message saved:", message);
+    // console.log("message saved:", message);
   } catch (err) {
     resp = {
       success: false,
       data: [],
       message: "error while saving the message in 'messages' collection",
     };
-    console.log(err);
+    // console.log(err);
     return resp;
   }
 
@@ -156,19 +156,19 @@ export const resetUnreadMessage = async (self_id, peer_id) => {
     );
 
     if (result) {
-      console.log("unread_messages reset to zero");
+      // console.log("unread_messages reset to zero");
     } else {
-      console.log("No matching contact found.");
+      // console.log("No matching contact found.");
     }
   } catch (error) {
-    console.error("Error reseting unread_messages:", error);
+    // console.error("Error reseting unread_messages:", error);
   }
 
   return 1;
 };
 
 export const updateUnreadMessages = async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   let userId = req.body._id,
     contactId = req.body.friend_id;
   let updatedUserFriend;

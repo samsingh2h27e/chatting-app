@@ -177,7 +177,7 @@ const MessageBox = () => {
     /// middle section (has the users we chatted with and a tutorial profile)
     const chat = allChats.find((item) => item._id === key);
     
-    console.log(`current chat:`, chat);
+    // console.log(`current chat:`, chat);
     if (chat) setActiveChat(chat);
 
     if (chat._id === "tutorial") {
@@ -191,7 +191,7 @@ const MessageBox = () => {
   const sendMessage = (e) => {
     e.preventDefault();
 
-    console.log(`The input message: ${input}`);
+    // console.log(`The input message: ${input}`);
     // Emit the message to the server
 
     if (socketRef.current) {
@@ -227,14 +227,14 @@ const MessageBox = () => {
 
    
     socketRef.current.on("connect", () => {
-      console.log("Connected to server:", socketRef.current.id);
+      // console.log("Connected to server:", socketRef.current.id);
     });
 
     // Listen for messages from the server
     socketRef.current.on("message", (msg) => {
       
       if (msg.success ) {
-        console.log("Message from server:", msg);
+        // console.log("Message from server:", msg);
         
         const sender_id = msg.data.sender_id;
         if (sender_id === activeChatRef.current || sender_id === auth.id ){
@@ -246,13 +246,13 @@ const MessageBox = () => {
             _id: auth.id, // Send flat key-value pairs
             friend_id: sender_id,
           });
-      console.log(response.data.message);
+      // console.log(response.data.message);
       
 
           })();
           setAllChats(allChats =>{
             let target_chat = allChats.find((chat) => chat._id === sender_id);
-            console.log(target_chat);
+            // console.log(target_chat);
             
             if (target_chat){
               target_chat.unread_messages++;
@@ -269,7 +269,7 @@ const MessageBox = () => {
 
     socketRef.current.on("get-initial-messages", (msgs) => {
       if (msgs.success) {
-        console.log("received the past messages from server:");
+        // console.log("received the past messages from server:");
 
       
         setAllChats((allChats) => {
@@ -278,7 +278,7 @@ const MessageBox = () => {
           );
           if (target_chat) {
             target_chat.unread_messages = 0;
-            console.log("reseted the unread_messages");
+            // console.log("reseted the unread_messages");
           } else {
           }
         });
@@ -295,7 +295,7 @@ const MessageBox = () => {
 
     socketRef.current.on("all-chats", (chats) => {
       if (chats.success) {
-        console.log("received all chats from server", chats.data);
+        // console.log("received all chats from server", chats.data);
         setAllChats(chats.data);
       } else {
         alert("failed to receive all-chats from server");
@@ -303,7 +303,7 @@ const MessageBox = () => {
     });
 
     socketRef.current.on("friend-added", async (message)=>{
-      console.log(message.message)
+      // console.log(message.message)
       if(message.message === "added"){
         socketRef.current.emit("all-chats", auth.id);
         setActiveTab(tabData[0]);
@@ -319,7 +319,7 @@ const MessageBox = () => {
     })
 
     socketRef.current.on("last-seen", (data) => {
-    console.log(data);
+    // console.log(data);
     if (data._id === activeChatRef.current) {
       setLastSeen(data.lastSeen);
     }
@@ -328,7 +328,7 @@ const MessageBox = () => {
     // Clean up the socket connection when the component unmounts
     return () => {
       socketRef.current.disconnect();
-      console.log("Socket disconnected");
+      // console.log("Socket disconnected");
     };
   }, []); // Empty dependency array ensures this runs only once
 

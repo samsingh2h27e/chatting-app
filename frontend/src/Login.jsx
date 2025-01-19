@@ -22,7 +22,7 @@ const Login = () => {
         email: email, // Send flat key-value pairs
         password: password,
       });
-      console.log(response.data.success);
+      // console.log(response.data.success);
 
       if (response.data.success){
         alert(response.data.message);

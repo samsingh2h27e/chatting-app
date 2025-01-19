@@ -13,12 +13,12 @@ export const updateUserContactChatId = async(userId, contactId, newChatId)=> {
     );
 
     if (result) {
-      console.log("Chat ID updated successfully");
+      // console.log("Chat ID updated successfully");
     } else {
-      console.log("No matching contact found.");
+      // console.log("No matching contact found.");
     }
   } catch (error) {
-    console.error("Error updating chat ID:", error);
+    // console.error("Error updating chat ID:", error);
   }
 }
 
