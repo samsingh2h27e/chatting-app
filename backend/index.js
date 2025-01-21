@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import {Server} from 'socket.io';
 import http from 'http';
-import env from "dotenv";
+import dotenv from "dotenv";
 import {connectDB} from './db/connectDB.js';
 import authRoutes from "./routes/authRoutes.js";
 import { getAllChats, getAllMessages, resetUnreadMessage, storeOneMessage } from "./controllers/msgControllers.js";
@@ -10,13 +10,13 @@ import { getLastSeenDateTime, setLastSeenDateTime } from "./helpers/queries.js";
 import {User} from "./db/userModel.js";
 import { concatenateLexicographically } from "./helpers/stringConcat.js";
 
-env.config();
+dotenv.config();
 const PORT = process.env.PORT || 5000;
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors :{
-        origin : 'http://localhost:3000',
+        origin : process.env.ORIGIN,
         methods:['GET', 'POST']
     }
 });
