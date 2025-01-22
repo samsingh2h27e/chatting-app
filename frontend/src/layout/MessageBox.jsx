@@ -312,6 +312,9 @@ const MessageBox = () => {
       else if(message.message === "exists"){
         alert("your friend is already connected with you");
       }
+      else if(message.message === "yourself"){
+        alert("Cannot add yourself!");
+      }
       else{
         alert("your friend doesn't use our website");
       }

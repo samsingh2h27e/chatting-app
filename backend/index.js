@@ -96,6 +96,10 @@ io.on('connection' , async(socket)=>{
     })
 
     socket.on("add-friend", async (f,d)=>{
+        if(f.friend_id === d.user_id){
+            socket.emit("friend-added",{message : "yourself"});
+            return;
+        }
         const friend = await User.findById(f.friend_id);
         const user = await User.findById(d.user_id);
         let mess = "";
