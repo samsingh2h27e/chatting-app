@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
+import dotenv from 'dotenv';
 
+dotenv.config();
 export const connectDB = async () => {
-  const uri = "mongodb://127.0.0.1:27017/chat-app-test"; // Replace 'testdb' with your database name
+  const uri = process.env.URI; // Replace 'testdb' with your database name
 
 mongodb: try {
   await mongoose.connect(uri, {

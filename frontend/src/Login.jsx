@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import {useAuth} from "./context/authContext";
 
+
 const Login = () => {
   // Move useState here
   const [email,setEmail] = useState("");
@@ -18,7 +19,7 @@ const Login = () => {
     // console.log(email);
     // console.log(password);
     try {
-      let response = await axios.post("http://localhost:5000/api/auth/login", {
+      let response = await axios.post('http://localhost:5000/api/auth/login', {
         email: email, // Send flat key-value pairs
         password: password,
       });
