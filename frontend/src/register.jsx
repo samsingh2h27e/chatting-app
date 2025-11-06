@@ -35,7 +35,7 @@ const Register = () => {
         } else {
           
           alert(response.data.message);
-          navigate("/login");
+          navigate("/register");
 
         }
       } catch (error) {

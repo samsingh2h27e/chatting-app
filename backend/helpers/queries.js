@@ -24,6 +24,7 @@ export const updateUserContactChatId = async(userId, contactId, newChatId)=> {
 
 function calculateTimeDifference(dateTime) {
   // Parse the date-time strings into Date objects
+
   const date1 = new Date(dateTime);
   const date2 = new Date();
 
@@ -52,7 +53,10 @@ export const getLastSeenDateTime = async (_id) =>{
     resp.message = "error while getting the user by id";
     return resp;
   }
-
+  if (!user) {
+    resp.message = "user not found";
+    return resp;
+  }
   const dateTimeObject = new Date(user.last_seen_date_time);
   const obj = {
     date:dateTimeObject.toLocaleDateString(),
