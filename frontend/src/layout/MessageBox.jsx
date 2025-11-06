@@ -221,7 +221,7 @@ const MessageBox = () => {
   const [auth] = useAuth();
   useEffect(() => {
     // Create the socket instance once
-    socketRef.current = io("http://localhost:5000", {
+    socketRef.current = io("https://quicktalk-backend-y9qa.onrender.com", {
       auth: { id: auth.id },
     });
 
@@ -242,7 +242,7 @@ const MessageBox = () => {
         } else{
           alert(`${sender_id} sent you a message`); 
           (async()=>{/// updates unread message in db
-            let response = await axios.post("http://localhost:5000/api/db/user/user-contacts/unread-messages", {
+            let response = await axios.post("https://quicktalk-backend-y9qa.onrender.com/api/db/user/user-contacts/unread-messages", {
             _id: auth.id, // Send flat key-value pairs
             friend_id: sender_id,
           });
