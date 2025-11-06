@@ -21,7 +21,7 @@ const Register = () => {
         return;
       } // Prevent default form submission behavior
       try {
-        let response = await axios.post("https://quicktalk-backend-y9qa.onrender.com/api/auth/register", {
+        let response = await axios.post("https://quicktalk-backend-ofyc.onrender.com/api/auth/register", {
           email: email, // Send flat key-value pairs
           password: password,
           fname: f_name,

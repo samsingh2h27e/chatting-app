@@ -19,7 +19,7 @@ const Login = () => {
     // console.log(email);
     // console.log(password);
     try {
-      let response = await axios.post('https://quicktalk-backend-y9qa.onrender.com/api/auth/login', {
+      let response = await axios.post('https://quicktalk-backend-ofyc.onrender.com/api/auth/login', {
         email: email, // Send flat key-value pairs
         password: password,
       });
